@@ -45,7 +45,7 @@ module Main where
   type Game = (Snake, Food, Size)
 
   start :: Snake
-  start = ([(0, 0),(1, 0),(2, 0),(3, 0)], South)
+  start = ([(0, 0),(1, 0),(2, 0),(3, 0),(4,0),(5,0),(6,0)], South)
 
   game :: Game
   game = (start, ((5, 10), 1), (60, 20))
@@ -94,24 +94,28 @@ module Main where
   makeGrid ((snek, _), (fud, _), (w, h)) = [[a | x <- [0..w - 1], let a = if (x, y) == head snek then Head else if (x,y) `elem` snek then Snake else if (x, y) == fud then Food else Blank] | y <- [0..h - 1]] --replicate h (replicate w Blank)
 
   pretty :: Grid -> String
-  pretty = (('|':) . (++"|") . concat . intercalate ["|\n|"] . map (map show))
+  pretty g = (('|':) . (++"|") . concat . intercalate ["|\n|"] . (++[(replicate n "-")]) . ((replicate n "-"):) . map (map show)) g
+    where
+      n = length (head g)
+
+  score :: Snake -> Int
+  score (ss, _) = length ss
 
   delay = 200000
 
   main = do
-    print game
     threadDelay delay
     gameLoop game
     -- putStrLn (pretty $ makeGrid game)
 
   gameLoop :: Game -> IO ()
   gameLoop (snake, food, size) = do
-    let snake' = move snake
-    let snake'' = eat food snake'
-    let game' = (snake'', food, size)
+    let snake' = (eat food . move) snake
+    let game' = (snake', food, size)
     let grid = (pretty . makeGrid) game'
-    if dead snake'' size then
-      putStrLn "you're dead"
+    if dead snake' size then
+
+      putStrLn $ "You're dead, You scored: " ++ (show $ score snake')
     else
       do
         clearScreen
