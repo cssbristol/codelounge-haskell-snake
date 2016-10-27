@@ -1,9 +1,11 @@
 module Main where
-
-
+  
   import Data.List
   import Control.Concurrent
   import System.Console.ANSI
+  import Control.Monad
+  import System.IO
+
 
   data Direction = North
                  | East
@@ -101,24 +103,42 @@ module Main where
   score :: Snake -> Int
   score (ss, _) = length ss
 
-  delay = 200000
+  delay = 100000
+
+  -- IO Stuff
 
   main = do
     threadDelay delay
-    gameLoop game
-    -- putStrLn (pretty $ makeGrid game)
+    c <- newEmptyMVar
+    hSetBuffering stdin NoBuffering
+    forkIO $ do
+      forever $ do
+        a <- getChar
+        putMVar c a
+    gameLoop game c
 
-  gameLoop :: Game -> IO ()
-  gameLoop (snake, food, size) = do
+  turnChar 'w' = turn North
+  turnChar 'a' = turn West
+  turnChar 's' = turn South
+  turnChar 'd' = turn East
+  turnChar _ = Just
+
+  gameLoop :: Game -> MVar (Char) -> IO ()
+  gameLoop (snake, food, size) c = do
     let snake' = (eat food . move) snake
-    let game' = (snake', food, size)
+    a <- tryTakeMVar c
+    let snake'' = case (join $ (flip turnChar snake) <$> a) of
+                Nothing -> snake'
+                Just s  -> s
+    let game' = (snake'', food, size)
     let grid = (pretty . makeGrid) game'
-    if dead snake' size then
+    if dead snake'' size then
 
-      putStrLn $ "You're dead, You scored: " ++ (show $ score snake')
+      putStrLn $ "You're dead, You scored: " ++ (show $ score snake'')
     else
       do
-        -- clearScreen
+        clearScreen
+        -- putStrLn ""
         putStrLn grid
         threadDelay delay
-        gameLoop game'
+        gameLoop game' c
