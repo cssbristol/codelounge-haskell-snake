@@ -11,7 +11,7 @@ module Main where
   -- in the right place.
 
   makeGrid :: Game -> Grid
-  makeGrid ((snek, _), (fud, _), (w, h)) = [[a | x <- [0..w - 1], let a = if (x, y) == head snek then Head else if (x,y) `elem` snek then Snake else if (x, y) == fud then Food else Blank] | y <- [0..h - 1]] --replicate h (replicate w Blank)
+  makeGrid ((snek, _), (fud, _), (w, h)) = [[a | x <- [0..w - 1], let a = if (x, y) == head snek then Head else if (x,y) `elem` snek then Snake else if (x, y) == fud then Food else Blank] | y <- [0..h - 1]]
 
   pretty :: Grid -> String
   pretty g = (('|':) . (++"|") . concat . intercalate ["|\n|"] . (++[(replicate n "-")]) . ((replicate n "-"):) . map (map show)) g
