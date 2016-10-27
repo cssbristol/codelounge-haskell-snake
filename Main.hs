@@ -1,5 +1,5 @@
 module Main where
-  
+
   import Data.List
   import Control.Concurrent
   import System.Console.ANSI
@@ -128,8 +128,8 @@ module Main where
     let snake' = (eat food . move) snake
     a <- tryTakeMVar c
     let snake'' = case (join $ (flip turnChar snake) <$> a) of
-                Nothing -> snake'
-                Just s  -> s
+                    Nothing -> snake'
+                    Just s  -> s
     let game' = (snake'', food, size)
     let grid = (pretty . makeGrid) game'
     if dead snake'' size then
@@ -138,7 +138,7 @@ module Main where
     else
       do
         clearScreen
-        -- putStrLn ""
+        putStrLn ""
         putStrLn grid
         threadDelay delay
         gameLoop game' c
