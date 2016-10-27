@@ -26,10 +26,10 @@ module Main where
             --  deriving Show
 
   instance Show Piece where
-    show Snake = "S"
-    show Food = "F"
+    show Snake = "▇"
+    show Food  = "■"
     show Blank = " "
-    show Head = "H"
+    show Head  = "░"
 
   -- This stores the width and height of the grid
   type Size = (Int, Int)
@@ -48,7 +48,7 @@ module Main where
   start = ([(0, 0),(1, 0),(2, 0),(3, 0),(4,0),(5,0),(6,0)], South)
 
   game :: Game
-  game = (start, ((5, 10), 1), (60, 20))
+  game = (start, ((5, 10), 1), (60, 21))
 
   move :: Snake -> Snake
   move (s@((a, b):ss), direction) = (s':ss', direction)
@@ -118,7 +118,7 @@ module Main where
       putStrLn $ "You're dead, You scored: " ++ (show $ score snake')
     else
       do
-        clearScreen
+        -- clearScreen
         putStrLn grid
         threadDelay delay
         gameLoop game'
