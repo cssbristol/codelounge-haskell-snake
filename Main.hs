@@ -40,7 +40,7 @@ module Main where
   gameLoop (snake, food, size) c = do
     let snake' = (eat food . move) snake
     a <- tryTakeMVar c
-    let snake'' = case (join $ (flip turnChar snake) <$> a) of
+    let snake'' = case (a >>= (flip turnChar snake)) of
                     Nothing -> snake'
                     Just s  -> s
     let game' = (snake'', food, size)
