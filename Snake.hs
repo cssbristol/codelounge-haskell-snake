@@ -21,10 +21,10 @@ module Snake where
             --  deriving Show
 
   instance Show Piece where
-    show Snake = "▇"
-    show Food  = "■"
+    show Snake = "▮"
+    show Food  = "▣"
     show Blank = " "
-    show Head  = "░"
+    show Head  = "▯"
 
   -- This stores the width and height of the grid
   type Size = (Int, Int)
