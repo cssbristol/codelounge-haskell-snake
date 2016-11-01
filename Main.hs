@@ -1,7 +1,7 @@
 module Main where
 
-  import Snake
-  import Data.List
+  import Snake hiding (replicate, length, any)
+  import Data.List (intercalate)
   import Control.Concurrent
   import System.Console.ANSI
   import Control.Monad
@@ -24,7 +24,6 @@ module Main where
   -- IO Stuff
 
   main = do
-    threadDelay delay
     c <- newEmptyMVar
     hSetBuffering stdin NoBuffering
     forkIO $ do
@@ -47,9 +46,8 @@ module Main where
                y <- randomRIO (0, snd size - 1)
                return ((x, y), 1)
              else return food
-
     a <- tryTakeMVar c
-    let snake'' = case (a >>= (flip turnChar snake)) of
+    let snake'' = case a >>= flip turnChar snake of
                     Nothing -> snake'
                     Just s  -> s
     let game' = (snake'', food', size)
