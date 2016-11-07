@@ -54,6 +54,8 @@ module Snake where
   -- grid, they will always be given the current state of the game.
   type Game = (Snake, Food, Size)
 
+  size@(w, h) = (60, 21)
+
   -- The starting config for the snake.
   start :: Snake
   start = ([(0, 0),(1, 0),(2, 0),(3, 0),(4,0),(5,0),(6,0)], South)
@@ -71,15 +73,19 @@ module Snake where
   -- pattern matched thing as well as the pattern matched thing. E.g.: xs@x:xs'
   -- xs = list, x = head and xs' = tail. Perhaps this is unecessary although I
   -- think it's not too big of a step.
+
   move :: Snake -> Snake
   move (s@((a, b):ss), direction) = (s':ss', direction)
     where
       ss' = init s
       s' = case direction of
-        North -> (a, b - 1)
-        East  -> (a + 1, b)
-        South -> (a, b + 1)
-        West  -> (a - 1, b)
+        North -> wrap (a, b - 1)
+        East  -> wrap (a + 1, b)
+        South -> wrap (a, b + 1)
+        West  -> wrap (a - 1, b)
+      wrap (a, b) = (a `mod` w, b `mod` h)
+      -- wrap = id -- Prevents wrapping
+
 
   -- Make the snake longer when given food. All of the new food could be placed
   -- in appropriate positions based on the direction of the snake, but far
@@ -120,7 +126,8 @@ module Snake where
   -- The snake should be dead if the head touches itself or any of the
   -- surrounding walls. Also if the head is touching any part of it's body.
   dead :: Snake -> Size -> Bool
-  dead (s@(x, y):ss, _) (w, d) = x > w - 1 || x < 0 || y > d - 1 || y < 0 || any (==s) ss
+  -- dead (s@(x, y):ss, _) (w, d) = x > w - 1 || x < 0 || y > d - 1 || y < 0 || any (==s) ss
+  dead (s@(x, y):ss, _) (w, d) = any (==s) ss -- Snek is not kill, on walls
 
   -- The score is just the length of the snake, although it would be pretty easy
   -- to let them score it however they want.

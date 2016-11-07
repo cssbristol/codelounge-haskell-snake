@@ -3,7 +3,7 @@ module Main where
   import Snake hiding (replicate, length, any)
   import Data.List (intercalate)
   import Control.Concurrent
-  import System.Console.ANSI
+  -- import System.Console.ANSI
   import Control.Monad
   import System.IO
   import System.Random
@@ -22,6 +22,8 @@ module Main where
       bottom = ("╚" ++ (replicate n '═') ++ "╝\n")
 
   -- IO Stuff
+
+  clearScreen = replicateM 20 (putStr "\n")
 
   main = do
     c <- newEmptyMVar
@@ -47,7 +49,7 @@ module Main where
                return ((x, y), 1)
              else return food
     a <- tryTakeMVar c
-    let snake'' = case a >>= flip turnChar snake of
+    let snake'' = case a >>= flip turnChar (snake') of
                     Nothing -> snake'
                     Just s  -> s
     let game' = (snake'', food', size)
