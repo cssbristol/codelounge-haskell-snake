@@ -26,10 +26,10 @@ module Snake where
 
   -- The characters used when showing the different items on the screen.
   instance Show Piece where
-    show Snake = "▮"
-    show Food  = "▣"
-    show Blank = " "
-    show Head  = "▯"
+    show Snake = "▓"
+    show Food  = "▒"
+    show Blank = "░"
+    show Head  = "█"
 
   -- This stores the width and height of the grid
   type Size = (Int, Int)
@@ -44,6 +44,7 @@ module Snake where
   any :: (a -> Bool) -> [a] -> Bool
   any p = foldr (\x b -> p x || b) False
 
+  replicate :: Int -> a -> [a]
   replicate n m = map (const m) [1..n]
 
   -- The grid perhaps doesn't need to stay in this part of the file.

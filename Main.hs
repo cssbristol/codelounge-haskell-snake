@@ -23,7 +23,9 @@ module Main where
 
   -- IO Stuff
 
-  clearScreen = replicateM 20 (putStr "\n")
+  clearScreen = putStr "\ESC[2J"
+
+  moveCursor x y = mapM_ putStr ["\ESC[", show x, ";", show y, "H"]
 
   main = do
     c <- newEmptyMVar
@@ -32,6 +34,7 @@ module Main where
       forever $ do
         a <- getChar
         putMVar c a
+    clearScreen
     gameLoop game c
 
   turnChar 'w' = turn North
@@ -59,7 +62,7 @@ module Main where
       putStrLn $ "You're dead, You scored: " ++ (show $ score snake'')
     else
       do
-        clearScreen
+        moveCursor 1 1
         putStrLn ""
         putStrLn ("Current Score: " ++ (show $ score snake''))
         putStrLn grid
