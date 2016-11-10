@@ -27,20 +27,24 @@ foreign import ccall unsafe "conio.h kbhit"
 initGetCharNoBuffering = return ()
 getCharNoBuffering = do k <- c_kbhit
                         if k == 0 then
-                          return '\0'
+                          return Nothing
                         else
-                          fmap (chr . fromEnum) c_getch
+                          fmap (Just . chr . fromEnum) c_getch
 
 #else
 
-import System.IO(hSetBuffering, BufferMode(NoBuffering), stdin)
+import System.IO(hSetBuffering, BufferMode(NoBuffering), hReady, stdin)
 
 initGetCharNoBuffering = hSetBuffering stdin NoBuffering
-getCharNoBuffering = getChar
+getCharNoBuffering = do b <- hReady stdin
+                        if not b then
+                          return Nothing
+                        else
+                          fmap Just getChar
 
 #endif
 
 -- | Must be called before invoking 'getCharNoBuffering'.
 initGetCharNoBuffering :: IO ()
 -- | Behaves like 'getChar', but never does any buffering.
-getCharNoBuffering :: IO Char
+getCharNoBuffering :: IO (Maybe Char)

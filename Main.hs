@@ -39,7 +39,9 @@ module Main where
     forkIO $ do
       forever $ do
         a <- getCharNoBuffering
-        putMVar c a
+        case a of
+          Just x -> putMVar c x
+          Nothing -> return ()
     clearScreen
     gameLoop game c
 
@@ -64,8 +66,7 @@ module Main where
     let game' = (snake'', food', size)
     let grid = (pretty . makeGrid) game'
     if dead snake'' size then
-
-      putStrLn $ "You're dead, You scored: " ++ (show $ score snake'')
+      showCursor  >> (putStrLn $ "You're dead, You scored: " ++ (show $ score snake''))
     else
       do
         moveCursor 1 1
