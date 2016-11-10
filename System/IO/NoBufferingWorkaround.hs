@@ -21,8 +21,15 @@ import Foreign.C.Types(CInt(..))
 foreign import ccall unsafe "conio.h getch"
     c_getch :: IO CInt
 
+foreign import ccall unsafe "conio.h kbhit"
+    c_kbhit :: IO CInt
+
 initGetCharNoBuffering = return ()
-getCharNoBuffering = fmap (chr . fromEnum) c_getch
+getCharNoBuffering = do k <- c_kbhit
+                        if k == 0 then
+                          return '\0'
+                        else
+                          fmap (chr . fromEnum) c_getch
 
 #else
 

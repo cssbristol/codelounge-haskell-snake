@@ -6,6 +6,7 @@ module Main where
   -- import System.Console.ANSI
   import Control.Monad
   import System.IO
+  import System.IO.NoBufferingWorkaround
   import System.Random
 
   -- The game needs to be turned into a grid will all of the correct elements
@@ -27,12 +28,17 @@ module Main where
 
   moveCursor x y = mapM_ putStr ["\ESC[", show x, ";", show y, "H"]
 
+  hideCursor = putStr "\ESC[?25l"
+
+  showCursor = putStr "\ESC[?25h"
+
   main = do
     c <- newEmptyMVar
-    hSetBuffering stdin NoBuffering
+    initGetCharNoBuffering
+    hideCursor
     forkIO $ do
       forever $ do
-        a <- getChar
+        a <- getCharNoBuffering
         putMVar c a
     clearScreen
     gameLoop game c
