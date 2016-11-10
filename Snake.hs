@@ -137,7 +137,7 @@ module Snake where
 
   -- I don't know what the exact unit is, but it's pretty small.
   delay :: Int
-  delay = 1000
+  delay = 100000
 
   -- Considering making them put it all together in one big function here, which
   -- would essentially carry everything the gameloop does, ignoring any of the

@@ -41,7 +41,7 @@ module Main where
         a <- getCharNoBuffering
         case a of
           Just x -> putMVar c x
-          Nothing -> return ()
+          Nothing -> threadDelay 100
     clearScreen
     gameLoop game c
 
