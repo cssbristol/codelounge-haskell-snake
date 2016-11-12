@@ -2,7 +2,7 @@ module Main where
 
   import Snake hiding (replicate, length, any)
   import Data.List (intercalate)
-  import Control.Concurrent (threadDelay)
+  import Control.Concurrent
   -- import System.Console.ANSI
   import Control.Monad
   import System.IO
@@ -34,10 +34,18 @@ module Main where
   showCursor = putStr "\ESC[?25h"
 
   main = do
+    c <- newEmptyMVar
     initGetCharNoBuffering
     hideCursor
     clearScreen
-    gameLoop game 0
+    forkIO $ do
+      hideCursor
+      forever $ do
+        a <- getCharNoBuffering
+        case a of
+          Just x  -> putMVar c x
+          Nothing -> threadDelay 100
+    gameLoop game c 0
     showCursor
 
   turnChar 'w' = turn North
@@ -46,10 +54,10 @@ module Main where
   turnChar 'd' = turn East
   turnChar _ = Just
 
-  gameLoop :: Game -> Int -> IO ()
-  gameLoop (snake, food, size) t0 = do
+  gameLoop :: Game -> MVar (Char) -> Int -> IO ()
+  gameLoop (snake, food, size) c t0 = do
     -- Input
-    a <- getCharNoBuffering
+    a <- tryTakeMVar c
     let snake' = case (a >>= flip turnChar snake) of
                    Nothing -> snake
                    Just s  -> s
@@ -57,7 +65,7 @@ module Main where
     t1 <- fmap fromIntegral getCPUTime
     let diff = fromIntegral (t1 - t0)
     if diff < (fromIntegral delay) then do
-      gameLoop (snake', food, size) t0
+      gameLoop (snake', food, size) c t0
     else do
     -- Physics
     let snake'' = (eat food . move) snake'
@@ -76,9 +84,5 @@ module Main where
         putStrLn ""
         putStrLn ("Current Score: " ++ (show $ score snake''))
         putStrLn grid
-        --t1 <- getCPUTime
-        --let diff = fromIntegral (t1 - t0) / (1000000000 * fromIntegral cpuTimePrecision)
-        --print $ (fromIntegral delay) - diff
-        --threadDelay $ delay -- - fromIntegral (t1 - t0)
         t2 <- fmap fromIntegral getCPUTime
-        gameLoop game' t2
+        gameLoop game' c t2
