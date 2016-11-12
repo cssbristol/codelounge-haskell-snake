@@ -33,9 +33,9 @@ getCharNoBuffering = do k <- c_kbhit
 
 #else
 
-import System.IO(hSetBuffering, BufferMode(NoBuffering), hReady, stdin)
+import System.IO(hSetBuffering, hSetEcho, BufferMode(NoBuffering), hReady, stdin)
 
-initGetCharNoBuffering = hSetBuffering stdin NoBuffering
+initGetCharNoBuffering = hSetBuffering stdin NoBuffering >> hSetEcho stdin False
 getCharNoBuffering = do b <- hReady stdin
                         if not b then
                           return Nothing
