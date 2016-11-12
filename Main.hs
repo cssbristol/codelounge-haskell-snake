@@ -2,12 +2,13 @@ module Main where
 
   import Snake hiding (replicate, length, any)
   import Data.List (intercalate)
-  import Control.Concurrent
+  import Control.Concurrent (threadDelay)
   -- import System.Console.ANSI
   import Control.Monad
   import System.IO
   import System.IO.NoBufferingWorkaround
   import System.Random
+  import System.CPUTime
 
   -- The game needs to be turned into a grid will all of the correct elements
   -- in the right place.
@@ -36,7 +37,7 @@ module Main where
     initGetCharNoBuffering
     hideCursor
     clearScreen
-    gameLoop game
+    gameLoop game 0
     showCursor
 
   turnChar 'w' = turn North
@@ -45,27 +46,39 @@ module Main where
   turnChar 'd' = turn East
   turnChar _ = Just
 
-  gameLoop :: Game -> IO ()
-  gameLoop (snake, food, size) = do
-    let snake' = (eat food . move) snake
-    food' <- if eatable food snake' then do
+  gameLoop :: Game -> Int -> IO ()
+  gameLoop (snake, food, size) t0 = do
+    -- Input
+    a <- getCharNoBuffering
+    let snake' = case (a >>= flip turnChar snake) of
+                   Nothing -> snake
+                   Just s  -> s
+    -- Fixed Delta Update
+    t1 <- fmap fromIntegral getCPUTime
+    let diff = fromIntegral (t1 - t0)
+    if diff < (fromIntegral delay) then
+      gameLoop (snake', food, size) t0
+    else do
+    -- Physics
+    let snake'' = (eat food . move) snake'
+    food' <- if eatable food snake'' then do
                x <- randomRIO (0, fst size - 1)
                y <- randomRIO (0, snd size - 1)
                return ((x, y), 1)
              else return food
-    a <- getCharNoBuffering
-    let snake'' = case a >>= flip turnChar (snake') of
-                    Nothing -> snake'
-                    Just s  -> s
     let game' = (snake'', food', size)
     let grid = (pretty . makeGrid) game'
+    -- Render
     if dead snake'' size then
       putStrLn $ "You're dead, You scored: " ++ (show $ score snake'')
-    else
-      do
+    else do
         moveCursor 1 1
         putStrLn ""
         putStrLn ("Current Score: " ++ (show $ score snake''))
         putStrLn grid
-        threadDelay delay
-        gameLoop game'
+        --t1 <- getCPUTime
+        --let diff = fromIntegral (t1 - t0) / (1000000000 * fromIntegral cpuTimePrecision)
+        --print $ (fromIntegral delay) - diff
+        --threadDelay $ delay -- - fromIntegral (t1 - t0)
+        t2 <- fmap fromIntegral getCPUTime
+        gameLoop game' t2
