@@ -55,6 +55,9 @@ module Snake where
   -- grid, they will always be given the current state of the game.
   type Game = (Snake, Food, Size)
 
+  w :: Int
+  h :: Int
+  size :: (Int, Int)
   size@(w, h) = (60, 21)
 
   -- The starting config for the snake.
@@ -76,7 +79,7 @@ module Snake where
   -- think it's not too big of a step.
 
   move :: Snake -> Snake
-  move (s@((a, b):ss), direction) = (s':ss', direction)
+  move (s@((a, b):_), direction) = (s':ss', direction)
     where
       ss' = init s
       s' = case direction of
@@ -128,7 +131,7 @@ module Snake where
   -- surrounding walls. Also if the head is touching any part of it's body.
   dead :: Snake -> Size -> Bool
   -- dead (s@(x, y):ss, _) (w, d) = x > w - 1 || x < 0 || y > d - 1 || y < 0 || any (==s) ss
-  dead (s@(x, y):ss, _) (w, d) = any (==s) ss -- Snek is not kill, on walls
+  dead (s@(_, _):ss, _) (_, _) = any (==s) ss -- Snek is not kill, on walls
 
   -- The score is just the length of the snake, although it would be pretty easy
   -- to let them score it however they want.

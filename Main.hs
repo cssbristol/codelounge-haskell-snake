@@ -33,17 +33,11 @@ module Main where
   showCursor = putStr "\ESC[?25h"
 
   main = do
-    c <- newEmptyMVar
     initGetCharNoBuffering
     hideCursor
-    forkIO $ do
-      forever $ do
-        a <- getCharNoBuffering
-        case a of
-          Just x -> putMVar c x
-          Nothing -> threadDelay 100
     clearScreen
-    gameLoop game c
+    gameLoop game
+    showCursor
 
   turnChar 'w' = turn North
   turnChar 'a' = turn West
@@ -51,22 +45,22 @@ module Main where
   turnChar 'd' = turn East
   turnChar _ = Just
 
-  gameLoop :: Game -> MVar (Char) -> IO ()
-  gameLoop (snake, food, size) c = do
+  gameLoop :: Game -> IO ()
+  gameLoop (snake, food, size) = do
     let snake' = (eat food . move) snake
     food' <- if eatable food snake' then do
                x <- randomRIO (0, fst size - 1)
                y <- randomRIO (0, snd size - 1)
                return ((x, y), 1)
              else return food
-    a <- tryTakeMVar c
+    a <- getCharNoBuffering
     let snake'' = case a >>= flip turnChar (snake') of
                     Nothing -> snake'
                     Just s  -> s
     let game' = (snake'', food', size)
     let grid = (pretty . makeGrid) game'
     if dead snake'' size then
-      showCursor  >> (putStrLn $ "You're dead, You scored: " ++ (show $ score snake''))
+      putStrLn $ "You're dead, You scored: " ++ (show $ score snake'')
     else
       do
         moveCursor 1 1
@@ -74,4 +68,4 @@ module Main where
         putStrLn ("Current Score: " ++ (show $ score snake''))
         putStrLn grid
         threadDelay delay
-        gameLoop game' c
+        gameLoop game'
