@@ -56,7 +56,7 @@ module Main where
     -- Fixed Delta Update
     t1 <- fmap fromIntegral getCPUTime
     let diff = fromIntegral (t1 - t0)
-    if diff < (fromIntegral delay) then
+    if diff < (fromIntegral delay) then do
       gameLoop (snake', food, size) t0
     else do
     -- Physics
